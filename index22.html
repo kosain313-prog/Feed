@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>카드뉴스 모음</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #f0f2f5;
+    color: #1c1e21;
+    display: flex;
+    justify-content: center;
+    padding: 20px 10px;
+  }
+
+  .app-container {
+    width: 100%;
+    max-width: 420px;
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+
+  .header {
+    padding: 16px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    border-bottom: 1px solid #eee;
+    background: #fff;
+  }
+
+  .card-list {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .card {
+    border: 1px solid #e1e8ed;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  /* 라디오 버튼 숨기기 */
+  .card input[type="radio"] { display: none; }
+
+  /* 슬라이드 박스 영역 */
+  .slide-container {
+    position: relative;
+    width: 100%;
+    min-height: 360px;
+    background: #111;
+    color: #fff;
+  }
+
+  .slide {
+    display: none;
+    padding: 24px;
+    min-height: 360px;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  /* 테마 색상 */
+  .theme-red { background: linear-gradient(135deg, #3d0000 0%, #110000 100%); }
+  .theme-blue { background: linear-gradient(135deg, #001f3f 0%, #000814 100%); }
+  .theme-dark { background: linear-gradient(135deg, #222222 0%, #0a0a0a 100%); }
+
+  /* 텍스트 스타일 */
+  .slide-tag { font-size: 12px; font-weight: bold; color: #ff4d4d; letter-spacing: 0.5px; }
+  .theme-blue .slide-tag { color: #38bdf8; }
+  .theme-dark .slide-tag { color: #facc15; }
+
+  .slide-title { font-size: 17px; font-weight: bold; margin-top: 6px; line-height: 1.4; word-break: keep-all; }
+  .slide-text { font-size: 13.5px; line-height: 1.6; color: #e2e8f0; margin: 14px 0; word-break: keep-all; }
+  
+  .slide-quote {
+    background: rgba(255, 255, 255, 0.08);
+    border-left: 3px solid #ff4d4d;
+    padding: 10px 12px;
+    font-size: 12.5px;
+    color: #cbd5e1;
+    margin-top: 10px;
+    line-height: 1.5;
+    word-break: keep-all;
+  }
+  .theme-blue .slide-quote { border-left-color: #38bdf8; }
+  .theme-dark .slide-quote { border-left-color: #facc15; }
+
+  .slide-sub { font-size: 11px; color: #94a3b8; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; }
+
+  /* 하단 슬라이드 탭/컨트롤 */
+  .controls {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-top: 1px solid #eee;
+  }
+
+  .dot-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 4px;
+    background: #e4e6eb;
+    color: #4b4f56;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  /* 라디오 체크 상태에 따른 슬라이드 및 버튼 활성화 (CSS Only) */
+  #c1-s1:checked ~ .slide-container .s1,
+  #c1-s2:checked ~ .slide-container .s2,
+  #c1-s3:checked ~ .slide-container .s3,
+  #c1-s4:checked ~ .slide-container .s4,
+  #c2-s1:checked ~ .slide-container .s1,
+  #c2-s2:checked ~ .slide-container .s2,
+  #c2-s3:checked ~ .slide-container .s3,
+  #c2-s4:checked ~ .slide-container .s4,
+  #c2-s5:checked ~ .slide-container .s5,
+  #c3-s1:checked ~ .slide-container .s1,
+  #c3-s2:checked ~ .slide-container .s2,
+  #c3-s3:checked ~ .slide-container .s3,
+  #c3-s4:checked ~ .slide-container .s4 {
+    display: flex;
+  }
+
+  #c1-s1:checked ~ .controls label[for="c1-s1"],
+  #c1-s2:checked ~ .controls label[for="c1-s2"],
+  #c1-s3:checked ~ .controls label[for="c1-s3"],
+  #c1-s4:checked ~ .controls label[for="c1-s4"],
+  #c2-s1:checked ~ .controls label[for="c2-s1"],
+  #c2-s2:checked ~ .controls label[for="c2-s2"],
+  #c2-s3:checked ~ .controls label[for="c2-s3"],
+  #c2-s4:checked ~ .controls label[for="c2-s4"],
+  #c2-s5:checked ~ .controls label[for="c2-s5"],
+  #c3-s1:checked ~ .controls label[for="c3-s1"],
+  #c3-s2:checked ~ .controls label[for="c3-s2"],
+  #c3-s3:checked ~ .controls label[for="c3-s3"],
+  #c3-s4:checked ~ .controls label[for="c3-s4"] {
+    background: #0095f6;
+    color: #ffffff;
+  }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+  <div class="header">카드뉴스 모음</div>
+
+  <div class="card-list">
+
+    <!-- 카드뉴스 1 -->
+    <div class="card">
+      <input type="radio" name="card1" id="c1-s1" checked>
+      <input type="radio" name="card1" id="c1-s2">
+      <input type="radio" name="card1" id="c1-s3">
+      <input type="radio" name="card1" id="c1-s4">
+
+      <div class="slide-container">
+        <div class="slide theme-red s1">
+          <div>
+            <div class="slide-tag">URGENT ALERT</div>
+            <div class="slide-title">러시아발 입국을 즉시 전면 금지하고 국경을 완전 봉쇄해야 합니다!</div>
+          </div>
+          <div class="slide-text">시베리아 치명적 페스트균 유출 사고 발생. 주저하는 순간 비극은 시작됩니다. 국민의 생명과 국가 안전을 지키기 위한 긴급 조치 요구.</div>
+          <div class="slide-sub">시베리아 연구소 유출 긴급 경보</div>
+        </div>
+
+        <div class="slide theme-red s2">
+          <div>
+            <div class="slide-tag">CRISIS 01</div>
+            <div class="slide-title">치명적인 페스트균 유출, 격리망은 무너지고 있습니다</div>
+          </div>
+          <div class="slide-text">
+            러시아 시베리아 연구소에서 페스트 병원체 시험관이 파손되어 연구원이 사망하고 접촉자 200여 명이 긴급 격리되었습니다. 현지 방역망을 벗어난 인원이 해외로 이동했을 가능성을 배제할 수 없습니다.
+            <div class="slide-quote">차단막이 뚫리기 전에 국경을 전면 차단해야 합니다.</div>
+          </div>
+          <div class="slide-sub">러시아 현지 사망자 및 무더기 격리 발생</div>
+        </div>
+
+        <div class="slide theme-red s3">
+          <div>
+            <div class="slide-tag">CRISIS 02</div>
+            <div class="slide-title">공기 전파 폐 페스트, 단 한 명 유입으로도 끔찍한 재앙</div>
+          </div>
+          <div class="slide-text">
+            폐 페스트는 단순 스킨십이 아니라 기침과 비말을 통해 공기 중으로 폭발적으로 퍼지는 치명적 감염병입니다. 초기 치료 시기를 놓치면 사망률이 매우 높습니다.
+            <div class="slide-quote">단 한 명이라도 입국하여 공공장소에 노출되면 전체 사회가 마비됩니다.</div>
+          </div>
+          <div class="slide-sub">공기 감염 · 극도의 위험성</div>
+        </div>
+
+        <div class="slide theme-red s4">
+          <div>
+            <div class="slide-tag">CRISIS 03 & ACTION</div>
+            <div class="slide-title">WHO 최고 경보 발령! 망설일 시간이 없습니다</div>
+          </div>
+          <div class="slide-text">세계보건기구(WHO)가 최고 단계 비상경보를 발령하고 입국 금지를 강력히 권고하고 있습니다. 정부는 즉시 러시아발 모든 입국을 차단하십시오!</div>
+          <div class="slide-sub">국경 전면 봉쇄 촉구</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <label for="c1-s1" class="dot-btn">1</label>
+        <label for="c1-s2" class="dot-btn">2</label>
+        <label for="c1-s3" class="dot-btn">3</label>
+        <label for="c1-s4" class="dot-btn">4</label>
+      </div>
+    </div>
+
+    <!-- 카드뉴스 2 -->
+    <div class="card">
+      <input type="radio" name="card2" id="c2-s1" checked>
+      <input type="radio" name="card2" id="c2-s2">
+      <input type="radio" name="card2" id="c2-s3">
+      <input type="radio" name="card2" id="c2-s4">
+      <input type="radio" name="card2" id="c2-s5">
+
+      <div class="slide-container">
+        <div class="slide theme-blue s1">
+          <div>
+            <div class="slide-tag">CARD NEWS SPECIAL ISSUE</div>
+            <div class="slide-title">부캉이를 내쫓아야 한다</div>
+          </div>
+          <div class="slide-text">연안 생태계 보호와 부캉이 본래의 생존을 위한 3가지 핵심 퇴출 논거 분석.</div>
+          <div class="slide-sub">환경보호 · 제조위생 · 생태전문가 견해 종합</div>
+        </div>
+
+        <div class="slide theme-blue s2">
+          <div>
+            <div class="slide-tag">NEWS REPORT 01</div>
+            <div class="slide-title">연안 해양 생태계 교란 및 서식지 압박</div>
+          </div>
+          <div class="slide-text">
+            부캉이의 수로 내 활동 영역 확장이 토종 해양 생물의 서식 환경을 압박하며 먹이사슬 교란을 야기하고 있습니다.
+            <div class="slide-quote">한국해양환경연구원(KOMI) 조사 결과 부캉이 서식지 인근 토종 해양 생물 종 다양성이 34.2% 감소했습니다.</div>
+          </div>
+          <div class="slide-sub">해양 생물 서식 환경 조사</div>
+        </div>
+
+        <div class="slide theme-blue s3">
+          <div>
+            <div class="slide-tag">NEWS REPORT 02</div>
+            <div class="slide-title">빙과류 '죠스바' 공정 유입 위험성 논란</div>
+          </div>
+          <div class="slide-text">
+            상어 형상을 한 부캉이가 인근 빙과류 '죠스바' 자동화 생산 라인에 잘못 유입될 위험이 제기되고 있습니다.
+            <div class="slide-quote">선별 센서 인지 오류 및 원료 혼입 시 식품 안전 위생에 심각한 위해가 우려됩니다.</div>
+          </div>
+          <div class="slide-sub">제조 위생 및 소비자 안전 우려</div>
+        </div>
+
+        <div class="slide theme-blue s4">
+          <div>
+            <div class="slide-tag">NEWS REPORT 03</div>
+            <div class="slide-title">수온 하강에 따른 멸종위기 흑상어 생존 위기</div>
+          </div>
+          <div class="slide-text">
+            부캉이의 정체는 멸종위기종인 흑상어로, 가을·겨울철 수온 하강 시 체온 조절 실패로 인한 폐사 위험이 고조될 수 있다.
+            <div class="slide-quote">
+              국립수산과학원 김현우 연구관은 이렇게 말했다. "수온이 내려갈수록 취약해져 먼바다 유도가 필요하다."<br><br>
+              국립군산대 최윤 명예교수는 이렇게 말했다. "인공 구조물의 자기장이 상어의 로렌치니 기관을 교란하는 원인일 수 있다."
+            </div>
+          </div>
+          <div class="slide-sub">전문가 현장 분석 및 진단</div>
+        </div>
+
+        <div class="slide theme-blue s5">
+          <div>
+            <div class="slide-tag">CONCLUSION</div>
+            <div class="slide-title">부캉이를 조속히 넓은 바다로</div>
+          </div>
+          <div class="slide-text">해양 생태계 교란 방지와 멸종위기 흑상어의 생존을 위해 인공 수로 퇴출 및 안전한 먼바다 방류가 시급합니다.</div>
+          <div class="slide-sub">생태 보전과 동물 복지를 위한 제언</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <label for="c2-s1" class="dot-btn">1</label>
+        <label for="c2-s2" class="dot-btn">2</label>
+        <label for="c2-s3" class="dot-btn">3</label>
+        <label for="c2-s4" class="dot-btn">4</label>
+        <label for="c2-s5" class="dot-btn">5</label>
+      </div>
+    </div>
+
+    <!-- 카드뉴스 3 -->
+    <div class="card">
+      <input type="radio" name="card3" id="c3-s1" checked>
+      <input type="radio" name="card3" id="c3-s2">
+      <input type="radio" name="card3" id="c3-s3">
+      <input type="radio" name="card3" id="c3-s4">
+
+      <div class="slide-container">
+        <div class="slide theme-dark s1">
+          <div>
+            <div class="slide-tag">CARD NEWS 초등 사회/시사 교실</div>
+            <div class="slide-title">아시안게임 군 면제, 이대로 괜찮을까?</div>
+          </div>
+          <div class="slide-text">운동선수 군 면제 혜택을 둘러싼 공정함과 제도 변화의 목소리.</div>
+          <div class="slide-sub">국방 환경 변화 · 공평함 · 국민 청원 이슈 종합</div>
+        </div>
+
+        <div class="slide theme-dark s2">
+          <div>
+            <div class="slide-tag">NEWS REPORT 01</div>
+            <div class="slide-title">군대 갈 인원 감소와 공평함 논란</div>
+          </div>
+          <div class="slide-text">
+            입대 인원이 감소하는 상황에서 스포츠 대회 우승만으로 군 면제를 주는 것이 보통 청년들과 비교해 공평하지 않다는 지적이 커지고 있습니다.
+            <div class="slide-quote">과거 국위선양 인정에서 최근 일부 선수들의 개인적 성공 및 명예만을 위한 혜택이라는 시각이 증가하고 있습니다.</div>
+          </div>
+          <div class="slide-sub">줄어드는 인구와 형평성 문제</div>
+        </div>
+
+        <div class="slide theme-dark s3">
+          <div>
+            <div class="slide-tag">NEWS REPORT 02</div>
+            <div class="slide-title">제도를 줄이려는 움직임과 국민 반응</div>
+          </div>
+          <div class="slide-text">
+            국방부는 입대 인원 부족 해결을 위해 체육·예술 분야 군 면제를 단계적으로 축소 또는 폐지하는 방안을 검토 중입니다.
+            <div class="slide-quote">우승 직후 발언 논란 등으로 국회 국민청원 게시판에 예체능 군 면제 폐지 청원이 등장하기도 했습니다.</div>
+          </div>
+          <div class="slide-sub">국방부 방침 및 국민 청원</div>
+        </div>
+
+        <div class="slide theme-dark s4">
+          <div>
+            <div class="slide-tag">CONCLUSION</div>
+            <div class="slide-title">모두가 공감할 수 있는 새로운 기준이 필요합니다</div>
+          </div>
+          <div class="slide-text">
+            인구 감소 시대와 공평한 사회를 위해 운동선수 군 면제 제도를 시대 변화에 맞게 개편할 필요가 있습니다.
+            <div class="slide-quote">생각해 보기: 군 면제 혜택은 공평하게 이루어지고 있는가?</div>
+          </div>
+          <div class="slide-sub">시대 변화와 공정성</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <label for="c3-s1" class="dot-btn">1</label>
+        <label for="c3-s2" class="dot-btn">2</label>
+        <label for="c3-s3" class="dot-btn">3</label>
+        <label for="c3-s4" class="dot-btn">4</label>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
